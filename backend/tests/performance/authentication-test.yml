@@ -1,0 +1,48 @@
+config:
+  target: "http://localhost:5000/api"
+  phases:
+    # Warm-up phase: start with 5 users for 30 seconds
+    - name: "Warm-up phase"
+      arrivalRate: 5
+      duration: 30
+    # Ramp-up phase: increase load to 50 users over 60 seconds
+    - name: "Ramp-up phase"
+      arrivalRate: 5
+      duration: 60
+      rampTo: 50
+    # Steady state: maintain 50 users for 120 seconds
+    - name: "Steady state"
+      duration: 120
+      arrivalRate: 10
+  defaults:
+    headers:
+      Content-Type: "application/json"
+scenarios:
+  - name: "Registration endpoint"
+    flow:
+      - post:
+          name: "Register user"
+          url: "/auth/register"
+          json:
+            username: "adminEX"
+            email: "admin@gmail.com"
+            password: "admin123"
+            role: "admin"
+  - name: "Authentication endpoints"
+    flow:
+      - post:
+          name: "Login and fetch token"
+          url: "/auth/login"
+          json:
+            email: "admin@gmail.com"
+            password: "admin123"
+          capture:
+            - json: "$.accessToken"
+              as: "token"
+            - json: "$.userID"
+              as: "userID"
+      - delete:
+          name: "Clear registration"
+          url: "/users/userID"
+          headers:
+            Authorization: "Bearer token={{ token }}"

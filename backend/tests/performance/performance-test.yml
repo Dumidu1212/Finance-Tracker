@@ -1,0 +1,44 @@
+config:
+  target: "http://localhost:5000/api"
+  phases:
+    # Warm-up phase: start with 5 users for 30 seconds
+    - name: "Warm-up phase"
+      arrivalRate: 5
+      duration: 10
+    # Ramp-up phase: increase load to 50 users over 60 seconds
+    - name: "Ramp-up phase"
+      arrivalRate: 5
+      duration: 30
+      rampTo: 20
+    # Steady state: maintain 50 users for 120 seconds
+#    - name: "Steady state"
+#      duration: 120
+#      arrivalRate: 50
+  defaults:
+    headers:
+      Content-Type: "application/json"
+scenarios:
+#  - name: "Get all users"
+#    flow:
+#      - get:
+#          url: "/users"
+  - name: "Create a new transaction"
+    flow:
+      - post:
+          url: "/transactions"
+          json:
+            amount: 100
+            currency: "USD"
+            type: "expense"
+            date: "2025-01-01"
+            category: "Test"
+            tags: ["test"]
+            description: "Performance test transaction"
+  - name: "Get transactions"
+    flow:
+      - get:
+          url: "/transactions"
+  - name: "Get dashboard summary"
+    flow:
+      - get:
+          url: "/reports/dashboard-summary-converted"
